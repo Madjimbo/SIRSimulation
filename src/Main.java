@@ -22,7 +22,7 @@ public class Main {
             int[] sumR = new int[T];
 
             for (int run = 0; run < runs; run++) {
-                Simulation sim = new Simulation(N);
+                Simulation sim = new Simulation(N, Simulation.Topology.RANDOM_GRAPH);
                 for (int t = 0; t < T; t++) {
                     int[] counts = sim.countStates();
                     sumS[t] += counts[0];
