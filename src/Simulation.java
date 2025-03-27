@@ -4,15 +4,26 @@ public class Simulation {
     private final List<Agent> population;
     private final Random random;
 
-    public Simulation(int N) {
+    public Simulation(int N, double vaccinationRate) {
         this.population = new ArrayList<>();
         this.random = new Random();
+
         for (int i = 0; i < N; i++) {
-            population.add(new Agent());
+            Agent.Strategy strategy = (random.nextDouble() < vaccinationRate)
+                    ? Agent.Strategy.VACCINATED
+                    : Agent.Strategy.LONER;
+            population.add(new Agent(strategy));
         }
-        // Infect one random agent
-        int infectedIndex = random.nextInt(N);
-        population.get(infectedIndex).setState(Agent.State.INFECTED);
+
+        // Infect one random loner agent
+        List<Agent> susceptibleLonerAgents = population.stream()
+                .filter(a -> a.getStrategy() == Agent.Strategy.LONER && a.getState() == Agent.State.SUSCEPTIBLE)
+                .toList();
+
+        if (!susceptibleLonerAgents.isEmpty()) {
+            Agent randomLoner = susceptibleLonerAgents.get(random.nextInt(susceptibleLonerAgents.size()));
+            randomLoner.setState(Agent.State.INFECTED);
+        }
     }
 
     public void simulateStep(double beta, double gamma) {
@@ -20,9 +31,11 @@ public class Simulation {
         Agent a1 = population.get(random.nextInt(population.size()));
         Agent a2 = population.get(random.nextInt(population.size()));
 
-        if (a1.getState() == Agent.State.INFECTED && a2.getState() == Agent.State.SUSCEPTIBLE && random.nextDouble() < beta) {
+        if (a1.getState() == Agent.State.INFECTED && a2.getState() == Agent.State.SUSCEPTIBLE
+                && a2.getStrategy() == Agent.Strategy.LONER && random.nextDouble() < beta) {
             a2.setState(Agent.State.INFECTED);
-        } else if (a2.getState() == Agent.State.INFECTED && a1.getState() == Agent.State.SUSCEPTIBLE && random.nextDouble() < beta) {
+        } else if (a2.getState() == Agent.State.INFECTED && a1.getState() == Agent.State.SUSCEPTIBLE
+                && a1.getStrategy() == Agent.Strategy.LONER && random.nextDouble() < beta) {
             a1.setState(Agent.State.INFECTED);
         }
 
