@@ -57,4 +57,8 @@ public class Simulation {
         }
         return counts;
     }
+
+    public List<Agent> getPopulation() {
+        return population;
+    }
 }
